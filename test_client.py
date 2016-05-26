@@ -14,6 +14,7 @@ __status__ = "Prototype"
 
 
 class KNXClient:
+
     def __init__(self, ip, port):
         self._udp_ip = ip
         self._udp_port = port
@@ -24,35 +25,31 @@ class KNXClient:
         self.data_endpoint = ('0.0.0.0', 0)  # for NAT
         self.control_enpoint = ('0.0.0.0', 0)
 
-
     def send_data(self, dest_group_addr, data, data_size):
-        self._conn_request();
-        conn_resp = self._conn_response();
+        self._conn_request()
+        conn_resp = self._conn_response()
         channel_id = conn_resp.channel_id
 
-        self._conn_state_request(channel_id);
-        conn_state_resp = self._conn_state_response();
+        self._conn_state_request(channel_id)
+        conn_state_resp = self._conn_state_response()
 
-        self._tunnel_request(channel_id, dest_group_addr, data, data_size);
-        tun_ack = self._tunnel_ack();
+        self._tunnel_request(channel_id, dest_group_addr, data, data_size)
+        tun_ack = self._tunnel_ack()
 
-        self._disconnect_request(channel_id);
-        self._disconnect_response();
+        self._disconnect_request(channel_id)
+        self._disconnect_response()
 
-
-    # Connection request
     def _conn_request(self):
         conn_req = knxnet.create_frame(knxnet.ServiceTypeDescriptor.CONNECTION_REQUEST,
-            self.control_enpoint,
-            self.data_endpoint)
+                                       self.control_enpoint,
+                                       self.data_endpoint)
 
-        print('==> Send connection request to {0}:{1}'.format(self._udp_ip, self._udp_port))
+        print('==> Send connection request to {0}:{1}'.format(
+            self._udp_ip, self._udp_port))
         KNXClient._print_debug(conn_req)
 
         self._sock.sendto(conn_req.frame, (self._udp_ip, self._udp_port))
 
-
-    # Connection response
     def _conn_response(self):
         data_recv, addr = self._sock.recvfrom(1024)
         conn_resp = knxnet.decode_frame(data_recv)
@@ -62,20 +59,17 @@ class KNXClient:
 
         return conn_resp
 
-
-    # Connection state request
     def _conn_state_request(self, channel_id):
         conn_state_req = knxnet.create_frame(knxnet.ServiceTypeDescriptor.CONNECTION_STATE_REQUEST,
-            channel_id,
-            self.control_enpoint)
+                                             channel_id,
+                                             self.control_enpoint)
 
-        print('==> Send connection state request to channel {0}'.format(channel_id))
+        print(
+            '==> Send connection state request to channel {0}'.format(channel_id))
         KNXClient._print_debug(conn_state_req)
 
         self._sock.sendto(conn_state_req.frame, (self._udp_ip, self._udp_port))
 
-
-    # Connection state response
     def _conn_state_response(self):
         data_recv, addr = self._sock.recvfrom(1024)
         conn_state_resp = knxnet.decode_frame(data_recv)
@@ -85,22 +79,19 @@ class KNXClient:
 
         return conn_state_resp
 
-
-    # Tunnel request
     def _tunnel_request(self, channel_id, dest_group_addr, data, data_size):
         tunnel_req = knxnet.create_frame(knxnet.ServiceTypeDescriptor.TUNNELLING_REQUEST,
-            dest_group_addr,
-            channel_id,
-            data,
-            data_size)
+                                         dest_group_addr,
+                                         channel_id,
+                                         data,
+                                         data_size)
 
-        print('==> Send tunnelling request to {0}:{1}'.format(self._udp_ip, self._udp_port))
+        print('==> Send tunnelling request to {0}:{1}'.format(
+            self._udp_ip, self._udp_port))
         KNXClient._print_debug(tunnel_req)
 
         self._sock.sendto(tunnel_req.frame, (self._udp_ip, self._udp_port))
 
-
-    # Tunnel ack
     def _tunnel_ack(self):
         data_recv, addr = self._sock.recvfrom(1024)
         ack = knxnet.decode_frame(data_recv)
@@ -110,19 +101,16 @@ class KNXClient:
 
         return ack
 
-
-    # Disconnect request
     def _disconnect_request(self, channel_id):
         disconnect_req = knxnet.create_frame(knxnet.ServiceTypeDescriptor.DISCONNECT_REQUEST,
-            channel_id,
-            self.control_enpoint)
+                                             channel_id,
+                                             self.control_enpoint)
 
         print('==> Send disconnect request to channel {0}'.format(channel_id))
         KNXClient._print_debug(disconnect_req)
 
         self._sock.sendto(disconnect_req.frame, (self._udp_ip, self._udp_port))
 
-    # Disconnect response
     def _disconnect_response(self):
         data_recv, addr = self._sock.recvfrom(1024)
         disconnect_resp = knxnet.decode_frame(data_recv)
@@ -172,6 +160,7 @@ if __name__ == '__main__':
         elif dest.main_group == 1:
             client.send_data(dest, int(sys.argv[3]), 1)
         else:
-            print('Unsupported destination group address: main group has to be [0-1]')
+            print(
+                'Unsupported destination group address: main group has to be [0-1]')
     else:
         print_usage()
