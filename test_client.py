@@ -42,6 +42,19 @@ class KNXClient:
 
         self._send_data(dest, value, KNXClient.DATA_SIZE)
 
+    def open_blind(self, floor, block):
+        self.set_blind(floor, block, value=255)
+
+    def close_blind(self, floor, block):
+        self.set_blind(floor, block, value=0)
+
+    def set_blind(self, floor, block, value):
+        '''value in [0,255] '''
+        data = "%s/%s/%s" % (Action.SET_BLIND, floor, block)
+        dest = knxnet.GroupAddress.from_str(data)
+
+        self._send_data(dest, value, KNXClient.DATA_SIZE)
+
     def _send_data(self, dest_group_addr, data, data_size):
         self._conn_request()
         conn_resp = self._conn_response()
@@ -161,7 +174,7 @@ def print_usage():
     print('Example: python3 test_client.py -a 1/4/1 1')
 
 if __name__ == '__main__':
-    import time # todo delete me
+    import time  # todo delete me
 
     if len(sys.argv) < 2:
         print_usage()
@@ -173,11 +186,18 @@ if __name__ == '__main__':
 
         client = KNXClient(ip="127.0.0.1", port=3671)
 
+        # VALVE TESTS
         client.set_valve_position(floor=4, block=1, value=100)
         time.sleep(0.5)
         client.set_valve_position(floor=4, block=1, value=0)
         time.sleep(0.5)
         client.set_valve_position(floor=4, block=1, value=255)
+        time.sleep(0.5)
+
+        # BLIND TESTS
+        client.open_blind(floor=4, block=1)
+        time.sleep(1.0)
+        client.close_blind(floor=4, block=1)
 
         # dest = knxnet.GroupAddress.from_str(sys.argv[2])
         # if dest.main_group == 0:
