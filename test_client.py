@@ -44,8 +44,8 @@ class KNXClient:
                                        self.control_enpoint,
                                        self.data_endpoint)
 
-        print('==> Send connection request to {0}:{1}'.format(
-            self._udp_ip, self._udp_port))
+        print('==> Send connection request to %s:%s' %
+              (self._udp_ip, self._udp_port))
         KNXClient._print_debug(conn_req)
 
         self._sock.sendto(conn_req.frame, (self._udp_ip, self._udp_port))
@@ -65,7 +65,7 @@ class KNXClient:
                                              self.control_enpoint)
 
         print(
-            '==> Send connection state request to channel {0}'.format(channel_id))
+            '==> Send connection state request to channel %s' % channel_id)
         KNXClient._print_debug(conn_state_req)
 
         self._sock.sendto(conn_state_req.frame, (self._udp_ip, self._udp_port))
@@ -86,8 +86,8 @@ class KNXClient:
                                          data,
                                          data_size)
 
-        print('==> Send tunnelling request to {0}:{1}'.format(
-            self._udp_ip, self._udp_port))
+        print('==> Send tunnelling request to %s:%s' %
+              (self._udp_ip, self._udp_port))
         KNXClient._print_debug(tunnel_req)
 
         self._sock.sendto(tunnel_req.frame, (self._udp_ip, self._udp_port))
@@ -106,7 +106,7 @@ class KNXClient:
                                              channel_id,
                                              self.control_enpoint)
 
-        print('==> Send disconnect request to channel {0}'.format(channel_id))
+        print('==> Send disconnect request to channel %s' % channel_id)
         KNXClient._print_debug(disconnect_req)
 
         self._sock.sendto(disconnect_req.frame, (self._udp_ip, self._udp_port))
