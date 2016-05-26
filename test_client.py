@@ -25,7 +25,7 @@ class KNXClient:
         self.control_enpoint = ('0.0.0.0', 0)
 
 
-    def send_data_to_group_addr(self, dest_group_addr, data, data_size):
+    def send_data(self, dest_group_addr, data, data_size):
         self._conn_request();
         conn_resp = self._conn_response();
         channel_id = conn_resp.channel_id
@@ -168,9 +168,9 @@ if __name__ == '__main__':
 
         dest = knxnet.GroupAddress.from_str(sys.argv[2])
         if dest.main_group == 0:
-            client.send_data_to_group_addr(dest, int(sys.argv[3]), 2)
+            client.send_data(dest, int(sys.argv[3]), 2)
         elif dest.main_group == 1:
-            client.send_data_to_group_addr(dest, int(sys.argv[3]), 1)
+            client.send_data(dest, int(sys.argv[3]), 1)
         else:
             print('Unsupported destination group address: main group has to be [0-1]')
     else:
