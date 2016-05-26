@@ -4,6 +4,8 @@
 import sys
 import socket
 from knxnet import *
+from enum import Enum
+from math import ceil, log
 
 __author__ = ["Adrien Lescourt", "Gary Marigliano", "Philippe Bonvin"]
 __copyright__ = "HES-SO 2015, Project EMG4B"
@@ -13,7 +15,15 @@ __email__ = "adrien.lescourt@gmail.com"
 __status__ = "Prototype"
 
 
+class Action:
+    VALVE_POSITION = 0
+    CLOSE_BLIND = 1
+    OPEN_BLIND = 2
+    SET_BLIND = 3
+
+
 class KNXClient:
+    DATA_SIZE = 0x2
 
     def __init__(self, ip, port):
         self._udp_ip = ip
@@ -25,7 +35,14 @@ class KNXClient:
         self.data_endpoint = ('0.0.0.0', 0)  # for NAT
         self.control_enpoint = ('0.0.0.0', 0)
 
-    def send_data(self, dest_group_addr, data, data_size):
+    def set_valve_position(self, floor, block, value):
+        '''value in [0, 255]'''
+        data = "%s/%s/%s" % (Action.VALVE_POSITION, floor, block)
+        dest = knxnet.GroupAddress.from_str(data)
+
+        self._send_data(dest, value, KNXClient.DATA_SIZE)
+
+    def _send_data(self, dest_group_addr, data, data_size):
         self._conn_request()
         conn_resp = self._conn_response()
         channel_id = conn_resp.channel_id
@@ -144,6 +161,8 @@ def print_usage():
     print('Example: python3 test_client.py -a 1/4/1 1')
 
 if __name__ == '__main__':
+    import time # todo delete me
+
     if len(sys.argv) < 2:
         print_usage()
         sys.exit(0)
@@ -154,13 +173,19 @@ if __name__ == '__main__':
 
         client = KNXClient(ip="127.0.0.1", port=3671)
 
-        dest = knxnet.GroupAddress.from_str(sys.argv[2])
-        if dest.main_group == 0:
-            client.send_data(dest, data=int(sys.argv[3]), data_size=2)
-        elif dest.main_group == 1:
-            client.send_data(dest, data=int(sys.argv[3]), data_size=1)
-        else:
-            print(
-                'Unsupported destination group address: main group has to be [0-1]')
+        client.set_valve_position(floor=4, block=1, value=100)
+        time.sleep(0.5)
+        client.set_valve_position(floor=4, block=1, value=0)
+        time.sleep(0.5)
+        client.set_valve_position(floor=4, block=1, value=255)
+
+        # dest = knxnet.GroupAddress.from_str(sys.argv[2])
+        # if dest.main_group == 0:
+        #     client.send_data(dest, data=int(sys.argv[3]), data_size=2)
+        # elif dest.main_group == 1:
+        #     client.send_data(dest, data=int(sys.argv[3]), data_size=1)
+        # else:
+        #     print(
+        #         'Unsupported destination group address: main group has to be [0-1]')
     else:
         print_usage()
