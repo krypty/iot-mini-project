@@ -66,10 +66,8 @@ def handle_action(action, floor, block, posted_json):
     with KNXClient(ip="127.0.0.1", port=3671) as client:
         if action == Action.VALVE_POSITION:
             return handle_valve_position(client, floor, block, posted_json)
-        elif action == Action.CLOSE_BLIND:
-            return handle_close_blind(client, floor, block)
-        elif action == Action.OPEN_BLIND:
-            return handle_open_blind(client, floor, block)
+        elif action == Action.TOGGLE_BLIND:
+            return handle_toggle_blind(client, floor, block, posted_json)
         elif action == Action.SET_BLIND:
             return handle_set_blind(client, floor, block, posted_json)
         else:
@@ -80,6 +78,9 @@ def handle_action(action, floor, block, posted_json):
 
 
 def handle_valve_position(client, floor, block, posted_json):
+    def is_value_valid(value):
+        return 0 <= value and value <= 255
+
     try:
         value = posted_json.get("value")
         if value is not None and is_value_valid(value):
@@ -91,20 +92,37 @@ def handle_valve_position(client, floor, block, posted_json):
         return Message.error("you must provide a POST parameter called value")
 
 
+def handle_toggle_blind(client, floor, block, posted_json):
+    def is_value_valid(value):
+        return 0 <= value and value <= 1
+
+    try:
+        value = posted_json.get("value")
+        if value is None or not is_value_valid(value):
+            return Message.error("value provided is not valid")
+
+        if value == 0:
+            handle_open_blind(client, floor, block)
+        else:
+            handle_close_blind(client, floor, block)
+
+        return Message.info("OK")
+
+    except IndexError:
+        return Message.error("you must provide a POST parameter called value")
+
+
 def handle_close_blind(client, floor, block):
-    return Message.error("Not implemented yet !")
+    client.close_blind(floor, block)
 
 
 def handle_open_blind(client, floor, block):
-    return Message.error("Not implemented yet !")
+    client.open_blind(floor, block)
 
 
 def handle_set_blind(client, floor, block, posted_json):
     return Message.error("Not implemented yet !")
 
-
-def is_value_valid(value):
-    return 0 <= value and value <= 255
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)

@@ -17,9 +17,9 @@ __status__ = "Prototype"
 
 class Action:
     VALVE_POSITION = 0
-    CLOSE_BLIND = 1
-    OPEN_BLIND = 2
+    TOGGLE_BLIND = 1
     SET_BLIND = 3
+    READ_BLIND = 4
 
 
 class KNXClient:
@@ -49,10 +49,18 @@ class KNXClient:
         self._send_data(dest, value, KNXClient.DATA_SIZE)
 
     def open_blind(self, floor, block):
-        self.set_blind(floor, block, value=255)
+        data = "%s/%s/%s" % (Action.TOGGLE_BLIND, floor, block)
+        dest = knxnet.GroupAddress.from_str(data)
+
+        value = 1
+        self._send_data(dest, value, KNXClient.DATA_SIZE)
 
     def close_blind(self, floor, block):
-        self.set_blind(floor, block, value=0)
+        data = "%s/%s/%s" % (Action.TOGGLE_BLIND, floor, block)
+        dest = knxnet.GroupAddress.from_str(data)
+
+        value = 0
+        self._send_data(dest, value, KNXClient.DATA_SIZE)
 
     def set_blind(self, floor, block, value):
         '''value in [0,255] '''
@@ -162,56 +170,37 @@ class KNXClient:
         print(repr(r))
         print(r)
 
-
-###################################
-# Set your KNXnet gateway address #
-###################################
-
-def print_usage():
-    print('Usage: python3 test_client.py COMMAND [GROUP_ADDR] DATA')
-    print('COMMAND LIST:')
-    print('              -a GROUP_ADDR DATA    one blind/valve')
-    print('              -b      no longer supported')
-    print('              -v      no longer supported')
-    print('DATA (INTEGER):')
-    print('              0 for blind up')
-    print('              1 for blind down')
-    print('              [0-255] for valve position')
-    print('Example: python3 test_client.py -a 1/4/1 1')
+"""
+Usage: python3 test_client.py COMMAND [GROUP_ADDR] DATA')
+COMMAND LIST:')
+              -a GROUP_ADDR DATA    one blind/valve')
+              -b      no longer supported')
+              -v      no longer supported')
+DATA (INTEGER):')
+              0 for blind up')
+              1 for blind down')
+              [0-255] for valve position')
+Example: python3 test_client.py -a 1/4/1 1')
+"""
 
 if __name__ == '__main__':
     import time  # todo delete me
 
-    if len(sys.argv) < 2:
-        print_usage()
-        sys.exit(0)
-    elif sys.argv[1] == '-a':
-        if len(sys.argv) != 4:
-            print_usage()
-            sys.exit(0)
+    client = KNXClient(ip="127.0.0.1", port=3671)
 
-        client = KNXClient(ip="127.0.0.1", port=3671)
+    # VALVE TESTS
+    client.set_valve_position(floor=4, block=1, value=100)
+    time.sleep(0.5)
+    client.set_valve_position(floor=4, block=1, value=0)
+    time.sleep(0.5)
+    client.set_valve_position(floor=4, block=1, value=255)
+    time.sleep(0.5)
 
-        # VALVE TESTS
-        client.set_valve_position(floor=4, block=1, value=100)
-        time.sleep(0.5)
-        client.set_valve_position(floor=4, block=1, value=0)
-        time.sleep(0.5)
-        client.set_valve_position(floor=4, block=1, value=255)
-        time.sleep(0.5)
+    # BLIND TESTS
+    client.open_blind(floor=4, block=1)
+    time.sleep(1.0)
+    client.close_blind(floor=4, block=1)
 
-        # BLIND TESTS
-        client.open_blind(floor=4, block=1)
-        time.sleep(1.0)
-        client.close_blind(floor=4, block=1)
-
-        # dest = knxnet.GroupAddress.from_str(sys.argv[2])
-        # if dest.main_group == 0:
-        #     client.send_data(dest, data=int(sys.argv[3]), data_size=2)
-        # elif dest.main_group == 1:
-        #     client.send_data(dest, data=int(sys.argv[3]), data_size=1)
-        # else:
-        #     print(
-        #         'Unsupported destination group address: main group has to be [0-1]')
-    else:
-        print_usage()
+    # at the moment this cannot be tested on the simulator
+    # time.sleep(1.0)
+    # client.set_blind(floor=4, block=1, value=50)
