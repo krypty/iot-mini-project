@@ -198,9 +198,15 @@ if __name__ == '__main__':
 
     # BLIND TESTS
     client.open_blind(floor=4, block=1)
-    time.sleep(1.0)
+    time.sleep(2.0)
     client.close_blind(floor=4, block=1)
 
     # at the moment this cannot be tested on the simulator
-    # time.sleep(1.0)
-    # client.set_blind(floor=4, block=1, value=50)
+    time.sleep(2.0)
+    client.set_blind(floor=4, block=1, value=128)
+
+    time.sleep(2.0)
+    client.set_blind(floor=4, block=1, value=0)
+
+    time.sleep(2.0)
+    client.set_blind(floor=4, block=1, value=255)
