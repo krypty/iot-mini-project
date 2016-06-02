@@ -35,6 +35,12 @@ class KNXClient:
         self.data_endpoint = ('0.0.0.0', 0)  # for NAT
         self.control_enpoint = ('0.0.0.0', 0)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._sock.close()
+
     def set_valve_position(self, floor, block, value):
         '''value in [0, 255]'''
         data = "%s/%s/%s" % (Action.VALVE_POSITION, floor, block)
