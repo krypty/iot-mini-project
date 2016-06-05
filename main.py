@@ -1,7 +1,7 @@
 #!flask/bin/python
 from flask import Flask, jsonify, request
-
 from test_client import KNXClient, Action
+from knxnet import *
 
 PARAMETER_SEPARATOR = "_"
 
@@ -24,6 +24,7 @@ class Message:
         return Message._build(is_error=False, msg=msg)
 
 
+# TODO read data from simulator once it has been implemented on it
 # @app.route('/block/<string:group_addr>', methods=['GET'])
 # def get_task(group_addr):
 #     print("group_addr %s" % group_addr)
@@ -44,6 +45,8 @@ def post_block(group_addr):
         response = handle_action(action, floor, block, posted_json)
     except ValueError:
         return Message.error("Invalid group_addr. Received : %s" % group_addr)
+    except utils.KnxnetUtilsException as e:
+        return Message.error(repr(e))
 
     return response
 
@@ -74,7 +77,7 @@ def handle_action(action, floor, block, posted_json):
             raise ValueError("Invalid action for %s" % action)
 
     # return response
-    return Message.info("OK")
+    return Message.error("error in handling action")
 
 
 def handle_valve_position(client, floor, block, posted_json):

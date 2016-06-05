@@ -44,20 +44,29 @@ class KNXClient:
     def set_valve_position(self, floor, block, value):
         '''value in [0, 255]'''
         data = "%s/%s/%s" % (Action.VALVE_POSITION, floor, block)
-        dest = knxnet.GroupAddress.from_str(data)
+        try:
+            dest = knxnet.GroupAddress.from_str(data)
+        except utils.KnxnetUtilsException as e:
+            raise e
 
         self._send_data(dest, value, KNXClient.DATA_SIZE)
 
     def open_blind(self, floor, block):
         data = "%s/%s/%s" % (Action.TOGGLE_BLIND, floor, block)
-        dest = knxnet.GroupAddress.from_str(data)
+        try:
+            dest = knxnet.GroupAddress.from_str(data)
+        except utils.KnxnetUtilsException as e:
+            raise e
 
         value = 1
         self._send_data(dest, value, KNXClient.DATA_SIZE)
 
     def close_blind(self, floor, block):
         data = "%s/%s/%s" % (Action.TOGGLE_BLIND, floor, block)
-        dest = knxnet.GroupAddress.from_str(data)
+        try:
+            dest = knxnet.GroupAddress.from_str(data)
+        except utils.KnxnetUtilsException as e:
+            raise e
 
         value = 0
         self._send_data(dest, value, KNXClient.DATA_SIZE)
@@ -65,7 +74,10 @@ class KNXClient:
     def set_blind(self, floor, block, value):
         '''value in [0,255] '''
         data = "%s/%s/%s" % (Action.SET_BLIND, floor, block)
-        dest = knxnet.GroupAddress.from_str(data)
+        try:
+            dest = knxnet.GroupAddress.from_str(data)
+        except utils.KnxnetUtilsException as e:
+            raise e
 
         self._send_data(dest, value, KNXClient.DATA_SIZE)
 
