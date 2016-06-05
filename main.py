@@ -121,7 +121,18 @@ def handle_open_blind(client, floor, block):
 
 
 def handle_set_blind(client, floor, block, posted_json):
-    return Message.error("Not implemented yet !")
+    def is_value_valid(value):
+        return 0 <= value and value <= 255
+
+    try:
+        value = posted_json.get("value")
+        if value is None or not is_value_valid(value):
+            return Message.error("value provided is not valid")
+
+        client.set_blind(floor, block, value)
+        return Message.info("OK")
+    except IndexError:
+        return Message.error("you must provide a POST parameter called value")
 
 
 if __name__ == '__main__':
